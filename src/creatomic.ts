@@ -110,6 +110,8 @@ class CreatomicController {
             const componentName = normalizeComponentName(name)
 
             this.createReExportComponentFile(componentFolderSource, componentName, componentFileName)
+            this.createComponentFile(componentFolderSource, componentName, componentFileName)
+            this.appendReExportIntoIndexFile(componentFolderSource, componentName, componentFileName)
   
             window.showInformationMessage(`${type}: ${name} created successfully.`)
           })
@@ -134,6 +136,37 @@ class CreatomicController {
     }
     catch (error) {
       window.showErrorMessage(`Cannot create index for ${componentName}.`)
+    }
+  }
+
+  createComponentFile(componentFolderSource, componentName, componentFileName) {
+    const { fileExtensions, templates } = this.config
+    const componentFileSource = resolve(componentFolderSource, `${componentFileName}.${fileExtensions}`)
+
+    if (fs.existsSync(componentFileSource)) {
+      window.showInformationMessage(`A ${componentFileName}.${fileExtensions} for ${componentFileName} already exists.`)
+      return
+    }
+
+    try {
+      const content = templater(templates.component, { componentName, componentFileName })
+      fs.appendFileSync(componentFileSource, content)
+    }
+    catch (error) {
+      window.showErrorMessage(`Cannot create ${componentFileName}.${fileExtensions} for ${componentName}.`)
+    }
+  }
+
+  appendReExportIntoIndexFile(componentFolderSource, componentName, componentFileName) {
+    try {
+      const { fileExtensions, templates } = this.config
+      const atomicIndexFileSource = resolve(componentFolderSource, '..', `index.${fileExtensions}`)
+      const content = templater(templates.atomicReexport, { componentName, componentFileName })
+
+      fs.appendFileSync(atomicIndexFileSource, content)
+    }
+    catch (error) {
+      window.showErrorMessage(`Cannot add reexpor for ${componentName}.`)
     }
   }
 
