@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import * as fs from 'fs'
 import * as deepmerge from 'deepmerge'
 
-import { mkdirp } from './utils'
+import { mkdirp, normalizeFileName, normalizeComponentName, templater } from './utils'
 
 
 class CreatomicController {
@@ -52,7 +52,7 @@ class CreatomicController {
           case 'Organism':
           case 'Template':
           case 'Page':
-            // TODO: createComponent
+          return this.createComponent(selection.label)
         }
       })
   }
@@ -91,6 +91,52 @@ class CreatomicController {
       })
   }
 
+  createComponent(type) {
+    const workspaceRoot = workspace.rootPath
+    const { rootDirectory, fileExtensions, naming: { components } , fileNamingCase } = this.config
+
+    window.showInputBox({ prompt: `${type} name` })
+      .then((name) => {
+        if (!name) {
+          return
+        }
+
+        const componentFolderName = this.getComponentFolderName(type)
+        const componentFileName = normalizeFileName(name, fileNamingCase)
+        const componentFolderSource = resolve(workspaceRoot, rootDirectory, components, componentFolderName, componentFileName)
+
+        mkdirp(componentFolderSource)
+          .then(() => {
+            const componentName = normalizeComponentName(name)
+
+            this.createReExportComponentFile(componentFolderSource, componentName, componentFileName)
+  
+            window.showInformationMessage(`${type}: ${name} created successfully.`)
+          })
+          .catch(() => {
+            window.showErrorMessage(`Cannot create directory of: ${componentFileName}.`)
+          })
+      })
+  }
+
+  createReExportComponentFile(componentFolderSource, componentName, componentFileName) {
+    const { fileExtensions, templates } = this.config
+    const componentIndexSource = resolve(componentFolderSource, `index.${fileExtensions}`)
+
+    if (fs.existsSync(componentIndexSource)) {
+      window.showInformationMessage(`A index.${fileExtensions} for ${componentFileName} already exists.`)
+      return
+    }
+
+    try {
+      const content = templater(templates.reexport, { componentName, componentFileName })
+      fs.appendFileSync(componentIndexSource, content)
+    }
+    catch (error) {
+      window.showErrorMessage(`Cannot create index for ${componentName}.`)
+    }
+  }
+
   getConfiguration() {
     const workspaceRoot = workspace.rootPath
     const defaultConfig = workspace.getConfiguration('creatomic')
@@ -106,6 +152,29 @@ class CreatomicController {
     }
 
     return defaultConfig
+  }
+
+  getComponentFolderName(type) {
+    const { naming: { atoms, organisms, templates, pages } } = this.config
+
+    switch (type) {
+      case 'Atom':
+        return atoms
+
+      case 'Organism':
+        return organisms
+
+      case 'Template':
+        return templates
+
+      case 'Page':
+        return pages
+
+      default:
+        window.showErrorMessage(`Unknown component type: ${type}.`)
+    }
+
+    return null
   }
 
   dispose() {}
