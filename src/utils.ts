@@ -1,4 +1,5 @@
 import * as changeCase from 'change-case'
+import * as esTemplater from 'es6-template'
 
 
 export function normalizeFileName(name, fileNamingCase) {
@@ -21,4 +22,12 @@ export function normalizeFileName(name, fileNamingCase) {
 
 export function normalizeComponentName(name) {
 	return changeCase.pascalCase(name)
+}
+
+export function templater(template, data) {
+  const extendedData = Object.assign(data, {
+    nl: '\n',
+    nl2: '\n\r\n\r',
+  })
+  return esTemplater(template, extendedData)
 }
