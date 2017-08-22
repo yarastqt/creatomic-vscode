@@ -79,11 +79,23 @@
         "creatomic.fileExtensions": {
           "type": "string",
           "default": "js",
+          "enum": [
+            "js",
+            "jsx",
+            "ts",
+            "tsx"
+          ],
           "description": "Default extension for all types"
         },
         "creatomic.fileNamingCase": {
           "type": "string",
           "default": "kebab-case",
+          "enum": [
+            "kebab-case",
+            "UpperCamelCase",
+            "lowerCamelCase",
+            "snake_case"
+          ],
           "description": "Support one of: kebab-case, UpperCamelCase, lowerCamelCase, snake_case"
         },
         "creatomic.templates": {
@@ -96,7 +108,13 @@
           "description": "Templates"
         }
       }
-    }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": ".creatomic",
+        "url": "http://json.schemastore.org/creatomic"
+      }
+    ]
   },
   "dependencies": {
     "change-case": "^3.0.1",
