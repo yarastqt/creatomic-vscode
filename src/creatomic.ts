@@ -32,6 +32,7 @@ class CreatomicController {
 
     const typesAvailable = [
       { label: 'Atom', description: 'Create atom component' },
+      { label: 'Molecule', description: 'Create molecule component' },
       { label: 'Organism', description: 'Create organism component' },
       { label: 'Template', description: 'Create template component' },
       { label: 'Page', description: 'Create page component' },
@@ -49,17 +50,18 @@ class CreatomicController {
             return this.createStructure()
 
           case 'Atom':
+          case 'Molecule':
           case 'Organism':
           case 'Template':
           case 'Page':
-          return this.createComponent(selection.label)
+            return this.createComponent(selection.label)
         }
       })
   }
 
   createStructure() {
-    const { naming: { atoms, organisms, templates, pages } } = this.config
-    const foldersNaming = [atoms, organisms, templates, pages]
+    const { naming: { atoms, molecules, organisms, templates, pages } } = this.config
+    const foldersNaming = [atoms, molecules, organisms, templates, pages]
 
     foldersNaming.forEach((folderName) => {
       this.createStructureFolder(folderName)
@@ -188,11 +190,14 @@ class CreatomicController {
   }
 
   getComponentFolderName(type) {
-    const { naming: { atoms, organisms, templates, pages } } = this.config
+    const { naming: { atoms, molecules, organisms, templates, pages } } = this.config
 
     switch (type) {
       case 'Atom':
         return atoms
+       
+      case 'Molecule':
+        return molecules
 
       case 'Organism':
         return organisms
